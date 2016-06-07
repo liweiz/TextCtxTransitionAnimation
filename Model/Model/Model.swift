@@ -25,7 +25,8 @@ import Foundation
 /// good structure to group them. Two lists of numbers transform to be a list of
 /// dictionaries.
 /// Calculation:
-/// Find out all continuous non-zero-delta-to-reach-target ranges for current numbers. Get max delta necessary for each number in the range for each 
+/// Find out all continuous non-zero-delta-to-reach-target ranges for current 
+/// numbers. Get max delta necessary for each number in the range for each
 /// range. Follow a rule provided to pick the range to operate on. Execute and
 /// loop the process till no non-zero-delta-to-reach-target range can be found.
 
@@ -63,6 +64,8 @@ protocol NewNumbersTransformable : HasNumber, IndexOfRange {
     @warn_unused_result func deltasWithRangesToAllNewNumbers(deltaPicker: (rangesAndDeltasForCurrentStep: [Range<rangeElement>: number]) -> (Range<rangeElement>, number)) -> [Range<rangeElement>: number]
 }
 
+/// Extracts some behaviors of a Dictionary so that a non-concrete Dictionary
+/// can be used.
 protocol NumberableKeyNumberableArrayValueDictionary : CollectionType, DictionaryLiteralConvertible {
     associatedtype Number : Numberable
     associatedtype Element = (Number, [Number])
@@ -73,7 +76,7 @@ protocol NumberableKeyNumberableArrayValueDictionary : CollectionType, Dictionar
 /// Numberable list.
 extension CollectionType where Generator.Element : Numberable, SubSequence.Generator.Element == Generator.Element {
     @warn_unused_result
-    func updatedBy(delta: Generator.Element, for range: Range<Index>) -> [Generator.Element] {
+    func updated(by delta: Generator.Element, for range: Range<Index>) -> [Generator.Element] {
         let head = self[startIndex..<range.startIndex]
         let tail = self[range.endIndex..<endIndex]
         let toUpdate = self[range]
@@ -84,6 +87,13 @@ extension CollectionType where Generator.Element : Numberable, SubSequence.Gener
 
 /// Numberable dictionary list
 extension CollectionType where Generator.Element : NumberableKeyNumberableArrayValueDictionary, SubSequence.Generator.Element == Generator.Element {
+    /// max-deltas: means, in a continuous range, the max delta that all its
+    /// members can be added in the progress of reaching each's target, but not
+    /// over-reaching for any member.
+    
+    /// Returns an 'Array' of 'Generator.Element.Number' to list all 
+    /// non-zero-max-deltas in the 'range', while the number of elements of the 
+    /// 'Array' keeps minimum.
     @warn_unused_result
     func deltas(for range: Range<Index>) -> [Generator.Element.Number] {
         let membersInRange = self[range]
@@ -98,14 +108,15 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
         }
     }
     
-    /// Returns the max delta value 'Self.Generator.Element.Number' valid for
-    /// all members in the 'range'; returns 'nil', if no member in 'range'.
+    /// Returns the max-delta value 'Self.Generator.Element.Number' valid for
+    /// all members in the 'range'
+    /// Returns 'nil', if no member in 'range'.
     @warn_unused_result
     func maxDelta(for range: Range<Index>) -> Generator.Element.Number? {
         return deltas(for: range).minElement()
     }
     /// Returns all ranges with continuous non-zero delta in Dictionary with 
-    /// Range as Key and max delta of all of this range as Value.
+    /// Range as Key and max-delta of this range as Value.
     @warn_unused_result
     func nonZeroMaxDeltaRangesAndDeltas() -> [Range<Index>: Generator.Element.Number] {
         let ds = deltas(for: startIndex..<endIndex)
@@ -139,14 +150,17 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
         }
         return results
     }
-    
+    /// Returns a new 'Array' of 'Generator.Element'. Each of its element has 
+    /// key-value pairs, where value is an array. The existing value of each
+    /// pair is appended with a new number. Numbers fall in 'range' are added by
+    /// 'delta' based on previous last numbers. Numbers out of 'range' provided
+    /// remain the same.
     @warn_unused_result
     func updated(by delta: Generator.Element.Number, for range: Range<Index>) -> [Generator.Element] {
         var deltas: [Generator.Element.Number] = []
         deltas.appendContentsOf(Repeat(count: ((startIndex..<range.startIndex).count as! Int), repeatedValue: delta.zero))
         deltas.appendContentsOf(Repeat(count: ((range.startIndex..<range.endIndex).count as! Int), repeatedValue: delta))
         deltas.appendContentsOf(Repeat(count: ((range.endIndex..<endIndex).count as! Int), repeatedValue: delta.zero))
-
         return map { (dic) -> Generator.Element in
             guard let key = dic.keys.first else {
                 fatalError("Empty Dictionary.")
@@ -158,7 +172,10 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
             return newDic
         }
     }
-    
+    /// Returns an 'Array' of 'Generator.Element' and ranges with their 
+    /// corresponding deltas for all the steps to reach targets so far, if new 
+    /// ranges with delta found.
+    /// Returns nil, if no new ones found.
     @warn_unused_result
     func deltaWithRangeToNewNumber(
         deltasAndRanges: [(Range<Index>, Generator.Element.Number)],
@@ -178,7 +195,20 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
     }
     
     @warn_unused_result
-    func deltasWithRangesToReachAllTargets(deltaPicker: (rangesAndDeltasForCurrentStep: [Range<Index>: Generator.Element.Number]) -> (Range<Index>, Generator.Element.Number)?) {
-        var result = deltaWithRangeToNewNumber([], deltaPicker: <#T##(rangesAndDeltasForCurrentStep: [Range<Self.Index> : Self.Generator.Element.Number]) -> (Range<Self.Index>, Self.Generator.Element.Number)?#>)
+    func deltasWithRangesToReachAllTargets(
+        deltaPicker: (rangesAndDeltasForCurrentStep: [Range<Index>: Generator.Element.Number]) -> (Range<Index>, Generator.Element.Number)?
+        ) -> ([Generator.Element], [(Range<Index>, Generator.Element.Number)])? {
+
+        var result = deltaWithRangeToNewNumber([], deltaPicker: deltaPicker)
+        guard let r = result else { return nil }
+        var s = r.0
+        var dr = r.1
+        while result != nil {
+            result = (s as! Self).deltaWithRangeToNewNumber(dr, deltaPicker: deltaPicker)
+            if let e = result {
+                s = r.0
+                dr = r.1
+            }
+        }
     }
 }
