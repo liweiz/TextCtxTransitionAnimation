@@ -172,6 +172,7 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
             return newDic
         }
     }
+    
     /// Returns an 'Array' of 'Generator.Element' and ranges with their 
     /// corresponding deltas for all the steps to reach targets so far, if new 
     /// ranges with delta found.
@@ -194,21 +195,25 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
         return nil
     }
     
+    /// Returns an 'Array' of
+    
     @warn_unused_result
     func deltasWithRangesToReachAllTargets(
         deltaPicker: (rangesAndDeltasForCurrentStep: [Range<Index>: Generator.Element.Number]) -> (Range<Index>, Generator.Element.Number)?
         ) -> ([Generator.Element], [(Range<Index>, Generator.Element.Number)])? {
-
         var result = deltaWithRangeToNewNumber([], deltaPicker: deltaPicker)
-        guard let r = result else { return nil }
-        var s = r.0
-        var dr = r.1
+        guard let firstResult = result else { return nil }
+        var newArray = firstResult.0
+        var newRangesAndDeltas = firstResult.1
         while result != nil {
-            result = (s as! Self).deltaWithRangeToNewNumber(dr, deltaPicker: deltaPicker)
-            if let e = result {
-                s = r.0
-                dr = r.1
+            result = (newArray as! Self).deltaWithRangeToNewNumber(newRangesAndDeltas, deltaPicker: deltaPicker)
+            if let validResult = result {
+                newArray = validResult.0
+                newRangesAndDeltas = validResult.1
             }
         }
+        return (newArray, newRangesAndDeltas)
     }
 }
+
+
