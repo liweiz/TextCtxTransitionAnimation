@@ -30,6 +30,67 @@ import Foundation
 /// range. Follow a rule provided to pick the range to operate on. Execute and
 /// loop the process till no non-zero-delta-to-reach-target range can be found.
 
+/// List of targets, not going to change.
+/// List of range and its delta, appended in each step.
+/// List of updated numbers, new list after each step.
+
+/// Base data structure is a list of targets. Each time a list of updated values
+/// is applied to it to get answers.
+
+/// max-deltas: means, in a continuous range, the max delta that all its
+/// members can be added in the progress of reaching each's target, but not
+/// over-reaching for any member.
+
+extension Range {
+    /// Returns the corresponding positions of start and end indice in
+    /// 'anotherRange' for 'rangeInSelf'.
+    /// Return 'nil' if endIndex of 'anotherRange' met before the endIndex of
+    /// 'rangeInSelf' met.
+    @warn_unused_result
+    func range<T : ForwardIndexType>(in anotherRange: Range<T>, for rangeInSelf: Range) -> Range<T>? {
+        var anotherStartIndexForRange = anotherRange.startIndex
+        var anotherEndIndexForRange = anotherRange.endIndex
+        var selfSuccessor = startIndex
+        var anotherSuccessor = anotherRange.startIndex
+        for _ in self {
+            if anotherRange.endIndex < anotherSuccessor {
+                return nil
+            }
+            if selfSuccessor == rangeInSelf.startIndex {
+                anotherStartIndexForRange = anotherSuccessor
+            }
+            if selfSuccessor == rangeInSelf.endIndex {
+                anotherEndIndexForRange = anotherSuccessor
+            }
+            selfSuccessor = selfSuccessor.successor()
+            anotherSuccessor = anotherSuccessor.successor()
+        }
+    }
+}
+
+extension CollectionType where Generator.Element : Numberable {
+    /// Returns the shortest 'Array' of delta in Generator.Element.
+    @warn_unused_result
+    func deltas<T : CollectionType where T.Generator.Element == Self.Generator.Element>(from collection: T, for range: Range<Index>) -> [Generator.Element] {
+        var selfGen = generate()
+        var anotherGen = collection.generate()
+        var deltas: [Generator.Element] = []
+        for i in range {
+            guard let selfElement = selfGen.next() else { break }
+            guard let anotherElement = anotherGen.next() else { break }
+            deltas.append(selfElement - anotherElement)
+        }
+        return deltas
+    }
+    /// Returns the max-delta value 'Self.Generator.Element.Number' valid for
+    /// all members in the 'range'
+    /// Returns 'nil', if no member in 'range'.
+    @warn_unused_result
+    func maxDelta(for range: Range<Index>) -> Generator.Element.Number? {
+        return deltas(for: range).minElement()
+    }
+}
+
 typealias currentAndTargetNumbers = [[Numberable]]
 
 /// Provides a Numberable type for adopters.
@@ -195,25 +256,6 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
         return nil
     }
     
-    /// Returns an 'Array' of
-    
-    @warn_unused_result
-    func deltasWithRangesToReachAllTargets(
-        deltaPicker: (rangesAndDeltasForCurrentStep: [Range<Index>: Generator.Element.Number]) -> (Range<Index>, Generator.Element.Number)?
-        ) -> ([Generator.Element], [(Range<Index>, Generator.Element.Number)])? {
-        var result = deltaWithRangeToNewNumber([], deltaPicker: deltaPicker)
-        guard let firstResult = result else { return nil }
-        var newArray = firstResult.0
-        var newRangesAndDeltas = firstResult.1
-        while result != nil {
-            result = (newArray as! Self).deltaWithRangeToNewNumber(newRangesAndDeltas, deltaPicker: deltaPicker)
-            if let validResult = result {
-                newArray = validResult.0
-                newRangesAndDeltas = validResult.1
-            }
-        }
-        return (newArray, newRangesAndDeltas)
-    }
 }
 
 
