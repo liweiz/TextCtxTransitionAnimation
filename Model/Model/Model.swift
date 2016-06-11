@@ -48,13 +48,13 @@ extension Range {
     /// 'rangeInSelf' met.
     @warn_unused_result
     func range<T : ForwardIndexType>(in anotherRange: Range<T>, for rangeInSelf: Range) -> Range<T>? {
-        var anotherStartIndexForRange = anotherRange.startIndex
-        var anotherEndIndexForRange = anotherRange.endIndex
+        var anotherStartIndexForRange: T?
+        var anotherEndIndexForRange: T?
         var selfSuccessor = startIndex
         var anotherSuccessor = anotherRange.startIndex
         for _ in self {
-            if anotherRange.endIndex < anotherSuccessor {
-                return nil
+            if anotherRange.endIndex.distanceTo(anotherRange.endIndex) > anotherSuccessor.distanceTo(anotherRange.endIndex) {
+                break
             }
             if selfSuccessor == rangeInSelf.startIndex {
                 anotherStartIndexForRange = anotherSuccessor
@@ -62,9 +62,13 @@ extension Range {
             if selfSuccessor == rangeInSelf.endIndex {
                 anotherEndIndexForRange = anotherSuccessor
             }
+            if let start = anotherStartIndexForRange, end = anotherEndIndexForRange {
+                return start..<end
+            }
             selfSuccessor = selfSuccessor.successor()
             anotherSuccessor = anotherSuccessor.successor()
         }
+        return nil
     }
 }
 
