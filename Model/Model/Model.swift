@@ -72,17 +72,21 @@ extension Range {
     }
 }
 
-extension CollectionType where Generator.Element : Numberable {
-    /// Returns the shortest 'Array' of delta in Generator.Element.
+extension CollectionType where Generator.Element : Numberable, Generator.Element == SubSequence.Generator.Element {
+    /// For each element in 'self', get the delta from the corresponding one in
+    /// 'from' and return as an 'Array'.
+    /// Returns 'nil', if any elemnt in either arrays is missing.
     @warn_unused_result
-    func deltas<T : CollectionType where T.Generator.Element == Self.Generator.Element>(from collection: T, for range: Range<Index>) -> [Generator.Element] {
-        var selfGen = generate()
-        var anotherGen = collection.generate()
+    func deltas<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T, for range: Range<Index>) -> [Generator.Element]? {
+        guard let rangeInFrom = (startIndex..<endIndex).range(in: collection.startIndex..<collection.endIndex, for: range) else { return nil }
+        let selfElementsInRange = self[range]
+        let fromElementsInRange = collection[rangeInFrom]
+        var fromGen = fromElementsInRange.generate()
         var deltas: [Generator.Element] = []
-        for i in range {
-            guard let selfElement = selfGen.next() else { break }
-            guard let anotherElement = anotherGen.next() else { break }
-            deltas.append(selfElement - anotherElement)
+        for selfElement in selfElementsInRange {
+            if let fromElement = fromGen.next() {
+                deltas.append(selfElement - fromElement)
+            }
         }
         return deltas
     }
@@ -90,8 +94,44 @@ extension CollectionType where Generator.Element : Numberable {
     /// all members in the 'range'
     /// Returns 'nil', if no member in 'range'.
     @warn_unused_result
-    func maxDelta(for range: Range<Index>) -> Generator.Element.Number? {
-        return deltas(for: range).minElement()
+    func maxDelta<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T, for range: Range<Index>) -> Generator.Element? {
+        return deltas(from: from, for: range)?.minElement()
+    }
+    
+    /// Returns all ranges with continuous non-zero delta in Dictionary with
+    /// Range as Key and max-delta of this range as Value.
+    @warn_unused_result
+    func nonZeroMaxDeltaRangesAndDeltas() -> [(Range<Index>, Generator.Element)] {
+        let ds = deltas(for: startIndex..<endIndex)
+        var results: [Range<Index>: Generator.Element.Number] = [:]
+        var startI: Index? = nil
+        var endI: Index? = nil
+        var deltasGen = ds.generate()
+        var deltaNow: Generator.Element.Number? = nil
+        for i in startIndex..<endIndex {
+            guard let delta = deltasGen.next() else {
+                fatalError("func nonZeroMaxDeltaRangesAndDeltas came up with invalid deltas.")
+            }
+            if delta != delta.zero {
+                if startI == nil {
+                    startI = i
+                }
+                endI = i
+                deltaNow = (deltaNow == nil) ? delta : min(deltaNow!, delta)
+            }
+            else {
+                if let end = endI {
+                    results[startI!..<end] = deltaNow
+                }
+                startI = nil
+                endI = nil
+                deltaNow = nil
+            }
+        }
+        if let start = startI, end = endI, delta = deltaNow {
+            results[start..<end] = delta
+        }
+        return results
     }
 }
 
