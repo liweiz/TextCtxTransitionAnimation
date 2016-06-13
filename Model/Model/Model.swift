@@ -89,17 +89,10 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
         }
         return deltas
     }
-    /// Returns the max-delta value 'Self.Generator.Element.Number' valid for
-    /// all members in the 'range'
-    /// Returns 'nil', if no member in 'range'.
-    @warn_unused_result
-    func maxDelta<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T, for range: Range<Index>? = nil) -> Generator.Element? {
-        let selfRange = range ?? indices
-        return deltas(from: collection, for: selfRange)?.minElement()
-    }
     
-    /// Returns all ranges with continuous non-zero delta in Dictionary with
-    /// Range as Key and max-delta of this range as Value.
+    /// Returns all ranges with continuous non-zero delta in 'Tuple' with
+    /// 'Range' as first element and max-delta of this range as second.
+    /// Returns 'nil', if any elemnt in either arrays is missing.
     @warn_unused_result
     func nonZeroMaxDeltaRangesAndDeltas<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T) -> [(Range<Index>, Generator.Element)]? {
         guard let deltas = deltas(from: collection) else { return nil }
@@ -148,6 +141,19 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
             }
         }
         return results
+    }
+    /// Returns a new 'Array' with elements in 'range' modified by 'delta'.
+    func apply(delta: Generator.Element, to range: Range<Index>) -> [Generator.Element] {
+        var deltas: [Generator.Element] = []
+        deltas.appendContentsOf(Repeat(count: ((startIndex..<range.startIndex).count as! Int), repeatedValue: delta.zero))
+        deltas.appendContentsOf(Repeat(count: ((range.startIndex..<range.endIndex).count as! Int), repeatedValue: delta))
+        deltas.appendContentsOf(Repeat(count: ((range.endIndex..<endIndex).count as! Int), repeatedValue: delta.zero))
+        var newNumbers: [Generator.Element] = []
+        var deltasGen = deltas.generate()
+        for number in self {
+            newNumbers.append(number + deltasGen.next()!)
+        }
+        return newNumbers
     }
 }
 
