@@ -129,8 +129,8 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
                 deltaNow = nil
             }
         }
-        if let start = headIndex, end = tailIndex, delta = deltaNow {
-            results.append((start..<end, delta))
+        if let start = headIndex, end = tailIndex, deltaHere = deltaNow {
+            results.append((start..<end, deltaHere))
         }
         return results
     }
