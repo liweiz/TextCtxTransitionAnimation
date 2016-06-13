@@ -76,8 +76,8 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
     /// Returns 'nil', if any elemnt in either arrays is missing.
     @warn_unused_result
     func deltas<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T, for range: Range<Index>? = nil) -> [Generator.Element]? {
-        let selfRange = range ?? startIndex..<endIndex
-        guard let rangeInFrom = (startIndex..<endIndex).range(in: collection.startIndex..<collection.endIndex, for: selfRange) else { return nil }
+        let selfRange = range ?? indices
+        guard let rangeInFrom = (indices).range(in: collection.indices, for: selfRange) else { return nil }
         let selfElementsInRange = self[selfRange]
         let fromElementsInRange = collection[rangeInFrom]
         var fromGen = fromElementsInRange.generate()
@@ -94,7 +94,7 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
     /// Returns 'nil', if no member in 'range'.
     @warn_unused_result
     func maxDelta<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T, for range: Range<Index>? = nil) -> Generator.Element? {
-        let selfRange = range ?? startIndex..<endIndex
+        let selfRange = range ?? indices
         return deltas(from: collection, for: selfRange)?.minElement()
     }
     
@@ -104,33 +104,48 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
     func nonZeroMaxDeltaRangesAndDeltas<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T) -> [(Range<Index>, Generator.Element)]? {
         guard let deltas = deltas(from: collection) else { return nil }
         var results: [(Range<Index>, Generator.Element)] = []
-        var headIndex: Index? = nil
-        var tailIndex: Index? = nil
+        var headIndex: Index?
+        var tailIndex: Index?
         var deltasGen = deltas.generate()
-        var deltaNow: Generator.Element? = nil
-        
-        for i in startIndex..<endIndex {
-            guard let delta = deltasGen.next() else {
+        var deltaForRange: Generator.Element?
+        for i in indices {
+            guard let deltaAtPosition = deltasGen.next() else {
                 fatalError("func nonZeroMaxDeltaRangesAndDeltas came up with invalid deltas.")
             }
-            if delta != delta.zero {
-                if headIndex == nil {
+            var lastResultDone = false
+            if deltaAtPosition != deltaAtPosition.zero {
+                if let _ = headIndex, deltaForRangeHere = deltaForRange {
+                    if deltaForRangeHere * deltaAtPosition < deltaAtPosition.zero {
+                        lastResultDone = true
+                    }
+                }
+                else {
                     headIndex = i
                 }
-                tailIndex = i
-                deltaNow = (deltaNow == nil) ? delta : min(deltaNow!, delta)
+                if !lastResultDone {
+                    deltaForRange = (deltaForRange == nil) ? deltaAtPosition : min(deltaForRange!, deltaAtPosition)
+                }
             }
             else {
-                if let start = headIndex, end = tailIndex, deltaHere = deltaNow {
+                lastResultDone = true
+            }
+            tailIndex = i
+            if deltaAtPosition != deltaAtPosition.zero && tailIndex?.successor() == endIndex {
+                tailIndex = tailIndex?.successor()
+                lastResultDone = true
+            }
+            if lastResultDone {
+                if let start = headIndex, end = tailIndex, deltaHere = deltaForRange {
                     results.append((start..<end, deltaHere))
                 }
                 headIndex = nil
                 tailIndex = nil
-                deltaNow = nil
+                deltaForRange = nil
+                if deltaAtPosition != deltaAtPosition.zero {
+                    headIndex = i
+                    deltaForRange = deltaAtPosition
+                }
             }
-        }
-        if let start = headIndex, end = tailIndex, deltaHere = deltaNow {
-            results.append((start..<end, deltaHere))
         }
         return results
     }
@@ -225,13 +240,13 @@ extension CollectionType where Generator.Element : NumberableKeyNumberableArrayV
     /// Range as Key and max-delta of this range as Value.
     @warn_unused_result
     func nonZeroMaxDeltaRangesAndDeltas() -> [Range<Index>: Generator.Element.Number] {
-        let ds = deltas(for: startIndex..<endIndex)
+        let ds = deltas(for: indices)
         var results: [Range<Index>: Generator.Element.Number] = [:]
         var startI: Index? = nil
         var endI: Index? = nil
         var deltasGen = ds.generate()
         var deltaNow: Generator.Element.Number? = nil
-        for i in startIndex..<endIndex {
+        for i in indices {
             guard let delta = deltasGen.next() else {
                 fatalError("func nonZeroMaxDeltaRangesAndDeltas came up with invalid deltas.")
             }
