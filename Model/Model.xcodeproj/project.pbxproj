@@ -402,6 +402,7 @@
 				EE1F10711D070B9B002F6621 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		EE1F10721D070B9B002F6621 /* Build configuration list for PBXNativeTarget "ModelTests" */ = {
 			isa = XCConfigurationList;
@@ -410,6 +411,7 @@
 				EE1F10741D070B9B002F6621 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
