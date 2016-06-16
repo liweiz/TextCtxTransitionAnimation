@@ -1,8 +1,8 @@
 //
 //  ViewController.swift
-//  Model
+//  tests
 //
-//  Created by Liwei Zhang on 2016-06-07.
+//  Created by Liwei Zhang on 2016-06-16.
 //  Copyright © 2016 Liwei Zhang. All rights reserved.
 //
 

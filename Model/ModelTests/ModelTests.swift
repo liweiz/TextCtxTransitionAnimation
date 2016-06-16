@@ -21,6 +21,26 @@ class ModelTests: XCTestCase {
         super.tearDown()
     }
     
+//    func test_Extension_Range_range() {
+//        struct Tests {
+//            let testName: String
+//            let in_anotherRange: Range<Int>
+//            let for_rangeInSelf: Range<Int>
+//            let expectedOutput: Range<Int>?
+//        }
+//        let selfRange = 0..<100
+//        let toTests = [
+//            Tests(testName: "normal", in_anotherRange: 100..<500, for_rangeInSelf: 34..<47, expectedOutput: 134..<147),
+//            Tests(testName: "nil", in_anotherRange: 10..<20, for_rangeInSelf: 34..<35, expectedOutput: nil)
+//        ]
+//        let testFuncName = "Extension_Range.range"
+//        var i = 0
+//        for t in toTests {
+//            testNonCollectionEqualWithLog(selfRange.range(in: t.in_anotherRange, for: t.for_rangeInSelf), expression2: t.expectedOutput, testFuncName: testFuncName, testName: t.testName, testIndex: i)
+//            i += 1
+//        }
+//    }
+    
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
