@@ -13,16 +13,16 @@ internal let testStartNotice = " *** START"
 internal let testFuncMultiReturn = " * Return."
 internal let testEndNotice = " *** END"
 
-internal func printStart(testFuncName: String, testName: String, testIndex: Int) {
+internal func printStart(_ testFuncName: String, testName: String, testIndex: Int) {
     print(testHead + "\(testIndex): " + testFuncName + " *** " + testName + testStartNotice)
 }
-internal func printFuncReturn(testFuncName: String, testName: String, testIndex: Int, returnIndex: Int) {
+internal func printFuncReturn(_ testFuncName: String, testName: String, testIndex: Int, returnIndex: Int) {
     print(testHead + "\(testIndex): " + testFuncName + " *** " + testName + testFuncMultiReturn + "\(returnIndex)")
 }
-internal func printEnd(testFuncName: String, testName: String, testIndex: Int) {
+internal func printEnd(_ testFuncName: String, testName: String, testIndex: Int) {
     print(testHead + "\(testIndex): " + testFuncName + " *** " + testName + testEndNotice)
 }
-internal func testArrayEqualWithLog<T: Equatable>(expression1: [T?], expression2: [T?], testFuncName: String, testName: String, testIndex: Int) {
+internal func testArrayEqualWithLog<T: Equatable>(_ expression1: [T?], expression2: [T?], testFuncName: String, testName: String, testIndex: Int) {
     printStart(testFuncName, testName: testName, testIndex: testIndex)
     var i = 0
     for t in expression1 {
@@ -32,17 +32,17 @@ internal func testArrayEqualWithLog<T: Equatable>(expression1: [T?], expression2
     }
     printEnd(testFuncName, testName: testName, testIndex: testIndex)
 }
-internal func testNonCollectionEqualWithLog<T: Equatable>(expression1: T?, expression2: T?, testFuncName: String, testName: String, testIndex: Int) {
+internal func testNonCollectionEqualWithLog<T: Equatable>(_ expression1: T?, expression2: T?, testFuncName: String, testName: String, testIndex: Int) {
     printStart(testFuncName, testName: testName, testIndex: testIndex)
     XCTAssertEqual(expression1, expression2)
     printEnd(testFuncName, testName: testName, testIndex: testIndex)
 }
-internal func testIsNilWithLog<T>(expression: T?, testFuncName: String, testName: String, testIndex: Int) {
+internal func testIsNilWithLog<T>(_ expression: T?, testFuncName: String, testName: String, testIndex: Int) {
     printStart(testFuncName, testName: testName, testIndex: testIndex)
     XCTAssertNil(expression)
     printEnd(testFuncName, testName: testName, testIndex: testIndex)
 }
-internal func testTwoElemTupleEqualWithLog<T: Equatable, U: Equatable>(expression1: (T, U), expression2: (T, U), testFuncName: String, testName: String, testIndex: Int) {
+internal func testTwoElemTupleEqualWithLog<T: Equatable, U: Equatable>(_ expression1: (T, U), expression2: (T, U), testFuncName: String, testName: String, testIndex: Int) {
     printStart(testFuncName, testName: testName, testIndex: testIndex)
     printFuncReturn(testFuncName, testName: testName, testIndex: testIndex, returnIndex: 0)
     XCTAssertEqual(expression1.0, expression2.0)

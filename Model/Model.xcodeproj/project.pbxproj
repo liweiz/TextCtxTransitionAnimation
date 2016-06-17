@@ -38,6 +38,7 @@
 		EE1F10751D070BCE002F6621 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		EE1F10761D070BCE002F6621 /* Numberable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Numberable.swift; sourceTree = "<group>"; };
 		EE1F10771D070BCE002F6621 /* NestedSequenceGrouper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NestedSequenceGrouper.swift; sourceTree = "<group>"; };
+		EEAB35E01D134CFF00008ABA /* ModelPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = ModelPlayground.playground; path = ../ModelPlayground.playground; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +62,7 @@
 		EE1F10491D070B9A002F6621 = {
 			isa = PBXGroup;
 			children = (
+				EEAB35E01D134CFF00008ABA /* ModelPlayground.playground */,
 				EE1F10541D070B9B002F6621 /* Model */,
 				EE1F10691D070B9B002F6621 /* ModelTests */,
 				EE1F10531D070B9B002F6621 /* Products */,
@@ -149,9 +151,11 @@
 				TargetAttributes = {
 					EE1F10511D070B9B002F6621 = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 					};
 					EE1F10651D070B9B002F6621 = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 						TestTargetID = EE1F10511D070B9B002F6621;
 					};
 				};
@@ -318,6 +322,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Liwei.TCTA.Model;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -329,6 +334,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Liwei.TCTA.Model;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -340,6 +346,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Liwei.TCTA.ModelTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Model.app/Model";
 			};
 			name = Debug;
@@ -352,6 +359,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Liwei.TCTA.ModelTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Model.app/Model";
 			};
 			name = Release;
