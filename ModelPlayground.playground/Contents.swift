@@ -93,19 +93,31 @@ extension Range {
 let rangeA = 0..<100
 let rangeB = 50..<1000
 let rangeC = -99..<(-60)
+let rangeD = 0..<0
 
 /// Range provided out of bounds of both base and in.
 /// Returns 'nil'.
-let a0 = rangeA.range(in: rangeA, for: 1000..<1001)
+let range0 = rangeA.range(in: rangeA, for: 1000..<1001)
 /// Range provided out of bounds of base.
 /// Returns 'nil'.
-let a1 = rangeA.range(in: rangeC, for: -9..<20)
+let range1 = rangeA.range(in: rangeC, for: -9..<20)
 /// Range provided out of bounds of in.
 /// Returns 'nil'.
-let a2 = rangeA.range(in: rangeC, for: 87..<90)
+let range2 = rangeA.range(in: rangeC, for: 87..<90)
 /// Range provided falls in both bounds of base and in.
 /// Returns '-76..<-69'.
-let a3 = rangeA.range(in: rangeC, for: 23..<30)
+let range3 = rangeA.range(in: rangeC, for: 23..<30)
+/// Empty range provided falls in both bounds of base and in.
+/// Empty base.
+/// Returns '0..<0'.
+let range4 = rangeD.range(in: rangeD, for: 0..<0)
+/// Non-empty base.
+/// Returns '150..<150'.
+let range5 = rangeB.range(in: rangeB, for: 150..<150)
+/// Empty range provided out of bounds of both base and in.
+/// Returns 'nil'.
+let range6 = rangeB.range(in: rangeB, for: 0..<0)
+
 
 extension CollectionType where Generator.Element : Numberable, Generator.Element == SubSequence.Generator.Element {
     /// For each element in 'self', get the delta from the corresponding one in
@@ -113,6 +125,9 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
     /// Returns 'nil', if any elemnt in either arrays is missing.
     @warn_unused_result
     func deltas<T : CollectionType where T.Generator.Element == Self.Generator.Element, T.Generator.Element == T.SubSequence.Generator.Element>(from collection: T, for range: Range<Index>? = nil) -> [Generator.Element]? {
+        if count as! Int != collection.count as! Int {
+            return nil
+        }
         let selfRange = range ?? indices
         guard let rangeInFrom = (indices).range(in: collection.indices, for: selfRange) else { return nil }
         let selfElementsInRange = self[selfRange]
@@ -138,50 +153,58 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
         var tailIndex: Index?
         var deltasGen = deltas.generate()
         var deltaForRange: Generator.Element?
-        for i in indices {
-            guard let deltaAtPosition = deltasGen.next() else {
-                fatalError("func nonZeroMaxDeltaRangesAndDeltas came up with invalid deltas.")
-            }
-            var lastResultDone = false
-            if deltaAtPosition != deltaAtPosition.zero {
-                if let _ = headIndex, deltaForRangeHere = deltaForRange {
-                    if deltaForRangeHere * deltaAtPosition < deltaAtPosition.zero {
-                        lastResultDone = true
-                    }
-                }
-                else {
-                    headIndex = i
-                }
-                if !lastResultDone {
-                    deltaForRange = (deltaForRange == nil) ? deltaAtPosition : min(deltaForRange!, deltaAtPosition)
+        for i in startIndex...endIndex {
+            tailIndex = i
+            var newPieceReady = false
+            let delta = deltasGen.next()
+            if i == endIndex {
+                if let _ = headIndex {
+                    newPieceReady = true
                 }
             }
             else {
-                lastResultDone = true
+                guard let deltaAtPosition = delta else {
+                    fatalError("func nonZeroMaxDeltaRangesAndDeltas came up with invalid deltas.")
+                }
+                if deltaAtPosition != deltaAtPosition.zero {
+                    if let _ = headIndex, deltaForRangeHere = deltaForRange {
+                        if deltaForRangeHere * deltaAtPosition < deltaAtPosition.zero {
+                            newPieceReady = true
+                        }
+                    }
+                    else {
+                        headIndex = i
+                    }
+                    if !newPieceReady {
+                        deltaForRange = (deltaForRange == nil) ? deltaAtPosition : (deltaAtPosition > deltaAtPosition.zero ? min(deltaForRange!, deltaAtPosition) : max(deltaForRange!, deltaAtPosition))
+                    }
+                }
+                else {
+                    newPieceReady = true
+                }
             }
-            tailIndex = i
-            if deltaAtPosition != deltaAtPosition.zero && tailIndex?.successor() == endIndex {
-                tailIndex = tailIndex?.successor()
-                lastResultDone = true
-            }
-            if lastResultDone {
+            if newPieceReady {
                 if let start = headIndex, end = tailIndex, deltaHere = deltaForRange {
                     results.append((start..<end, deltaHere))
                 }
                 headIndex = nil
                 tailIndex = nil
                 deltaForRange = nil
-                if deltaAtPosition != deltaAtPosition.zero {
-                    headIndex = i
-                    deltaForRange = deltaAtPosition
+                if let d = delta {
+                    if d != d.zero {
+                        headIndex = i
+                        deltaForRange = d
+                    }
                 }
             }
         }
         return results
     }
     /// Returns a new 'Array' with elements in 'range' modified by 'delta'.
+    /// Returns 'nil', if 'range' is out of bounds.
     @warn_unused_result
-    func apply(delta: Generator.Element, to range: Range<Index>) -> [Generator.Element] {
+    func apply(delta: Generator.Element, to range: Range<Index>) -> [Generator.Element]? {
+        if startIndex.distanceTo(range.startIndex) < 0 || endIndex.distanceTo(range.endIndex) > 0 { return nil }
         var deltas: [Generator.Element] = []
         deltas.appendContentsOf(Repeat(count: ((startIndex..<range.startIndex).count as! Int), repeatedValue: delta.zero))
         deltas.appendContentsOf(Repeat(count: ((range.startIndex..<range.endIndex).count as! Int), repeatedValue: delta))
@@ -199,17 +222,58 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
 let arrayA = [3, 12, 32, 15]
 let arrayB = [32, 152, 68, 8]
 let arrayC = [1]
+let arrayD = [2, 14, 31, 80]
+let arrayE = [3, 12, 44, 32, 15]
+let arrayF = [32, 152, 44, 68, 8]
+let arrayG = [1, 3, 12, 44, 32, 15, 2]
+let arrayH = [1, 32, 152, 44, 68, 8, 2]
 
-/// No-missing-element array pair with valid range.
+/// No-missing-element array pair with valid non-empty range.
 /// Returns '[-29, -140, -36, 7]'.
 let deltas0 = arrayA.deltas(from: arrayB)
+/// No-missing-element array pair with valid empty range.
 /// Returns '[]'.
 let deltas1 = arrayA.deltas(from: arrayB, for: 0..<0)
+
 /// No-missing-element array pair with out of bounds range.
 /// Returns 'nil'.
 let deltas2 = arrayA.deltas(from: arrayB, for: 0..<10)
-
+/// Missing-element array pair with valid range.
+/// Returns 'nil'.
 let deltas3 = arrayA.deltas(from: arrayC, for: 0..<1)
+
+/// No-missing-element array pair.
+/// Returns '[(Range(0..<3), -29), (Range(3..<4), 7)]'.
+let options0 = arrayA.nonZeroMaxDeltaRangesAndDeltas(from: arrayB)
+/// Returns '[(Range(0..<3), 29), (Range(3..<4), -7)]'.
+let options1 = arrayB.nonZeroMaxDeltaRangesAndDeltas(from: arrayA)
+/// Returns '[(Range(0..<2), -29), (Range(3..<4), -36), (Range(4..<5), 7)]'.
+let options2 = arrayE.nonZeroMaxDeltaRangesAndDeltas(from: arrayF)
+/// Returns '[(Range(0..<2), 29), (Range(3..<4), 36), (Range(4..<5), -7)]'.
+let options3 = arrayF.nonZeroMaxDeltaRangesAndDeltas(from: arrayE)
+/// Returns '[(Range(1..<3), -29), (Range(4..<5), -36), (Range(5..<6), 7)]'.
+let options4 = arrayG.nonZeroMaxDeltaRangesAndDeltas(from: arrayH)
+/// Returns '[(Range(1..<3), 29), (Range(4..<5), 36), (Range(5..<6), -7)]'.
+let options5 = arrayH.nonZeroMaxDeltaRangesAndDeltas(from: arrayG)
+/// Returns '[(Range(0..<1), 1), (Range(1..<2), -2), (Range(2..<4), 1), (Range(3..<4), -65)]'.
+let options6 = arrayA.nonZeroMaxDeltaRangesAndDeltas(from: arrayD)
+
+/// Missing-element array pair.
+/// Returns 'nil'.
+let options7 = arrayA.nonZeroMaxDeltaRangesAndDeltas(from: arrayC)
+
+/// Apply to valid range.
+/// Returns '[1, 82, 202, 94, 68, 8, 2]'.
+let applied0 = arrayH.apply(50, to: 1..<4)
+/// Apply to invalid range.
+/// Returns 'nil'.
+let applied1 = arrayH.apply(50, to: 10..<40)
+/// Returns 'nil'.
+let applied2 = arrayH.apply(50, to: 2..<8)
+/// Returns '[1, 32, 202, 94, 118, 58, 52]'.
+let applied3 = arrayH.apply(50, to: 2..<7)
+/// Returns 'nil'.
+let applied4 = arrayH.apply(50, to: -1..<7)
 
 extension Array where Element : Numberable {
     /// Returns all deltas, ranges applied and new arrays generated to reach
@@ -231,7 +295,7 @@ extension Array where Element : Numberable {
                         else { return nil }
                     deltas.append(pick.1)
                     ranges.append(pick.0)
-                    newCollection = (newArrays.last ?? collection).apply(pick.1, to: pick.0)
+                    newCollection = (newArrays.last ?? collection).apply(pick.1, to: pick.0)!
                     newArrays.append(newCollection)
                 }
             }
@@ -244,10 +308,6 @@ extension Array where Element : Numberable {
 }
 
 
-let shorterArray = [1]
-let longerArray = [2, 3]
-let longAsTarget = longerArray.deltasAndRangesWithNewArrays(from: shorterArray) { return $0.first }
-print(longAsTarget)
 
 let normalTargetArray = [42, 321, 53, 532, 12, 8, 2123, 2, 12341, 653, 1, 4]
 let normalInitialArray = [1, 23, 53, 123, 412, 8, 231, 23, 1234, 43, 1, 3]
