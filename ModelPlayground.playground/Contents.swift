@@ -196,6 +196,21 @@ extension CollectionType where Generator.Element : Numberable, Generator.Element
     
 }
 
+let arrayA = [3, 12, 32, 15]
+let arrayB = [32, 152, 68, 8]
+let arrayC = [1]
+
+/// No-missing-element array pair with valid range.
+/// Returns '[-29, -140, -36, 7]'.
+let deltas0 = arrayA.deltas(from: arrayB)
+/// Returns '[]'.
+let deltas1 = arrayA.deltas(from: arrayB, for: 0..<0)
+/// No-missing-element array pair with out of bounds range.
+/// Returns 'nil'.
+let deltas2 = arrayA.deltas(from: arrayB, for: 0..<10)
+
+let deltas3 = arrayA.deltas(from: arrayC, for: 0..<1)
+
 extension Array where Element : Numberable {
     /// Returns all deltas, ranges applied and new arrays generated to reach
     /// self.
