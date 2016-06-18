@@ -282,6 +282,7 @@ extension Array where Element : Numberable {
     /// 'deltaPicker' fails to pick.
     @warn_unused_result
     func deltasAndRangesWithNewArrays(from collection: [Element], @noescape deltaPicker: ([(Range<Int>, Element)]) -> (Range<Int>, Element)?) -> (deltas: [Generator.Element], ranges: [Range<Int>], newArrays: [[Element]])? {
+        if count != collection.count { return nil }
         var deltas: [Generator.Element] = []
         var ranges: [Range<Int>] = []
         var newArrays: [[Element]] = []
@@ -307,12 +308,24 @@ extension Array where Element : Numberable {
     }
 }
 
-
-
 let normalTargetArray = [42, 321, 53, 532, 12, 8, 2123, 2, 12341, 653, 1, 4]
 let normalInitialArray = [1, 23, 53, 123, 412, 8, 231, 23, 1234, 43, 1, 3]
+let shorterArray = [1]
+let longerArray = [Int](count: 15, repeatedValue: 55)
 
-let normalOutcome = normalTargetArray.deltasAndRangesWithNewArrays(from: normalInitialArray) { return $0.first }
+/// No corresponding element in either array.
+/// 'from' is shorter.
+/// Return 'nil'.
+let toTarget0 = normalTargetArray.deltasAndRangesWithNewArrays(from: shorterArray) { $0.first }
+/// 'from' is longer.
+/// Return 'nil'.
+let toTarget1 = normalTargetArray.deltasAndRangesWithNewArrays(from: longerArray) { $0.first }
+/// 'deltaPicker' not working properly.
+/// Return 'nil'.
+let toTarget2 = normalTargetArray.deltasAndRangesWithNewArrays(from: longerArray) { _ in return nil }
+/// Normal.
+/// Returns '([41, 257, 409, -400, 1892, -21, 610, 10497, 1], [Range(0..<2), Range(1..<2), Range(3..<4), Range(4..<5), Range(6..<7), Range(7..<8), Range(8..<10), Range(8..<9), Range(11..<12)], [[42, 64, 53, 123, 412, 8, 231, 23, 1234, 43, 1, 3], [42, 321, 53, 123, 412, 8, 231, 23, 1234, 43, 1, 3], [42, 321, 53, 532, 412, 8, 231, 23, 1234, 43, 1, 3], [42, 321, 53, 532, 12, 8, 231, 23, 1234, 43, 1, 3], [42, 321, 53, 532, 12, 8, 2123, 23, 1234, 43, 1, 3], [42, 321, 53, 532, 12, 8, 2123, 2, 1234, 43, 1, 3], [42, 321, 53, 532, 12, 8, 2123, 2, 1844, 653, 1, 3], [42, 321, 53, 532, 12, 8, 2123, 2, 12341, 653, 1, 3], [42, 321, 53, 532, 12, 8, 2123, 2, 12341, 653, 1, 4]])'.
+let toTarget3 = normalTargetArray.deltasAndRangesWithNewArrays(from: normalInitialArray) { $0.first }
 /// normalOutcome each step breakdown:
 /// step: 0
 /// newCollection: [1, 23, 53, 123, 412, 8, 231, 23, 1234, 43, 1, 3]
