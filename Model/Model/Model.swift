@@ -8,82 +8,186 @@
 
 import Foundation
 
-
-/// Problem to solve:
-/// Given a list of numbers and new values of each number. Each time, only one
-/// non zero delta can be applied to a non empty subset of continuous members of 
-/// the list. The delta needs to minimize the gap between current value and new 
-/// value for each number applied, while not creating new gap for any member.
-
-/// Solution:
-/// Data Structure:
-/// To have easier way to find corresponding number pair, group the initial and
-/// target together and form a new list. To know the whole transform clearly,
-/// record all changes (including zeros) for each step. Append each step's 
-/// change after the initial. To clearly identify the target and each step's 
-/// number, a dictionary with target as key and an array of number as value is a
-/// good structure to group them. Two lists of numbers transform to be a list of
-/// dictionaries.
-/// Calculation:
-/// Find out all continuous non-zero-delta-to-reach-target ranges for current 
-/// numbers. Get max delta necessary for each number in the range for each
-/// range. Follow a rule provided to pick the range to operate on. Execute and
-/// loop the process till no non-zero-delta-to-reach-target range can be found.
-
-/// List of targets, not going to change.
-/// List of range and its delta, appended in each step.
-/// List of updated numbers, new list after each step.
-
-/// Base data structure is a list of targets. Each time a list of updated values
-/// is applied to it to get answers.
-
-/// max-deltas: means, in a continuous range, the max delta that all its
-/// members can be added in the progress of reaching each's target, but not
-/// over-reaching for any member.
-
-extension Range {
-    /// Returns the corresponding positions of start and end indice of 
+extension CountableRange {
+    /// Returns the corresponding positions of start and end indice of
     /// 'rangeInSelf' in 'anotherRange'.
-    /// Return 'nil' if endIndex of 'anotherRange' met before the endIndex of
+    /// Return 'nil', if endIndex of 'anotherRange' met before the endIndex of
     /// 'rangeInSelf' met.
     @warn_unused_result
-    func range<T : Comparable>(in anotherRange: Range<T>, for rangeInSelf: Range) -> Range<T>? {
-        var anotherStartIndexForRange: T?
-        var anotherEndIndexForRange: T?
-        var anotherSuccessor = anotherRange.lowerBound
-        for i in lowerBound..<upperBound {
-            if anotherRange.distance(from: anotherRange.endIndex, to: anotherRange.endIndex) > <#T##Collection corresponding to `anotherSuccessor`##Collection#>.distance(from: anotherSuccessor, to: anotherRange.endIndex) {
+    func range<T : protocol<Comparable, _Strideable>>(in anotherCountableRange: CountableRange<T>, for rangeInSelf: CountableRange) -> CountableRange<T>? {
+        var anotherLowerBoundForRange: T?
+        var anotherUpperBoundForRange: T?
+        var anotherIterator = anotherCountableRange.makeIterator()
+        var anotherNext = anotherIterator.next()
+        for i in CountableClosedRange(lowerBound...upperBound) {
+            if anotherCountableRange.startIndex.distance(to: anotherCountableRange.endIndex) > anotherNext?.distance(to: anotherCountableRange.endIndex) {
                 break
             }
-            if i == rangeInSelf.startIndex {
-                anotherStartIndexForRange = anotherSuccessor
+            if i == rangeInSelf.lowerBound {
+                anotherLowerBoundForRange = anotherNext
             }
-            if i == rangeInSelf.endIndex {
-                anotherEndIndexForRange = anotherSuccessor
+            if i == rangeInSelf.upperBound {
+                anotherUpperBoundForRange = anotherNext
             }
-            if let start = anotherStartIndexForRange, end = anotherEndIndexForRange {
+            if let start = anotherLowerBoundForRange, end = anotherUpperBoundForRange {
                 return start..<end
             }
-            anotherSuccessor = <#T##Collection corresponding to `anotherSuccessor`##Collection#>.index(after: anotherSuccessor)
+            anotherNext = anotherIterator.next()
         }
         return nil
     }
 }
 
-extension Collection where Iterator.Element : Numberable, Iterator.Element == SubSequence.Iterator.Element {
+
+
+protocol Arithmeticable {
+    func +(_: Self, _: Self) -> Self
+    func -(_: Self, _: Self) -> Self
+    func *(_: Self, _: Self) -> Self
+    func /(_: Self, _: Self) -> Self
+}
+
+extension Int: Arithmeticable {}
+extension Int8: Arithmeticable {}
+extension Int16: Arithmeticable {}
+extension Int32: Arithmeticable {}
+extension Int64: Arithmeticable {}
+extension UInt: Arithmeticable {}
+extension UInt8: Arithmeticable {}
+extension UInt16: Arithmeticable {}
+extension UInt32: Arithmeticable {}
+extension UInt64: Arithmeticable {}
+
+extension Double: Arithmeticable {}
+extension Float: Arithmeticable {}
+
+
+protocol ControlledComparable : Comparable {
+    func isEqual(to another: Self) -> Bool
+    func isGreater(than another: Self) -> Bool
+    func isLess(than another: Self) -> Bool
+}
+
+extension IntegerArithmetic {
+    @warn_unused_result
+    func isEqual(to another: Self) -> Bool {
+        return self == another
+    }
+    @warn_unused_result
+    func isGreater(than another: Self) -> Bool {
+        return self > another
+    }
+    @warn_unused_result
+    func isLess(than another: Self) -> Bool {
+        return self < another
+    }
+}
+
+extension Int: ControlledComparable {}
+extension Int8: ControlledComparable {}
+extension Int16: ControlledComparable {}
+extension Int32: ControlledComparable {}
+extension Int64: ControlledComparable {}
+extension UInt: ControlledComparable {}
+extension UInt8: ControlledComparable {}
+extension UInt16: ControlledComparable {}
+extension UInt32: ControlledComparable {}
+extension UInt64: ControlledComparable {}
+
+let accuracyPctInDouble: Double = 0.001 * 0.01
+
+extension Double {
+    @warn_unused_result
+    func isEqual(to another: Double) -> Bool {
+        return self - another > -accuracyPctInDouble && self - another < accuracyPctInDouble
+    }
+    @warn_unused_result
+    func isGreater(than another: Double) -> Bool {
+        return self - another >= accuracyPctInDouble
+    }
+    @warn_unused_result
+    func isLess(than another: Double) -> Bool {
+        return self - another <= -accuracyPctInDouble
+    }
+}
+
+extension Double: ControlledComparable {}
+
+let accuracyPctInFloat: Float = 0.0001
+
+extension Float {
+    @warn_unused_result
+    func isEqual(to another: Float) -> Bool {
+        return self - another > -accuracyPctInFloat && self - another < accuracyPctInFloat
+    }
+    @warn_unused_result
+    func isGreater(than another: Float) -> Bool {
+        return self - another >= accuracyPctInFloat
+    }
+    @warn_unused_result
+    func isLess(than another: Float) -> Bool {
+        return self - another <= -accuracyPctInFloat
+    }
+}
+
+extension Float: ControlledComparable {}
+
+func controlledMin<T : ControlledComparable>(_ x: T, _ y: T) -> T {
+    switch x {
+        case let d as Double:
+            let e = y as! Double
+            return (d.isGreater(than: e) ? e : d) as! T
+        case let f as Float:
+            let g = y as! Float
+            return (f.isGreater(than: g) ? g : f) as! T
+        default:
+            return min(x, y)
+    }
+}
+
+func controlledMax<T : Comparable>(_ x: T, _ y: T) -> T {
+    switch x {
+    case let d as Double:
+        let e = y as! Double
+        return (d.isLess(than: e) ? e : d) as! T
+    case let f as Float:
+        let g = y as! Float
+        return (f.isLess(than: g) ? g : f) as! T
+    default:
+        return max(x, y)
+    }
+}
+
+
+/// To let methods work on both Array and ArraySlice.
+extension Collection
+where Iterator.Element : ControlledComparable,
+      Iterator.Element : Arithmeticable,
+      Iterator.Element == SubSequence.Iterator.Element,
+      Index == Int,
+      Indices == CountableRange<Index> {
     /// For each element in 'self', get the delta from the corresponding one in
     /// 'from' and return as an 'Array'.
     /// Returns 'nil', if any elemnt in either arrays is missing.
     @warn_unused_result
-    func deltas<T : Collection where T.Iterator.Element == Self.Iterator.Element, T.Iterator.Element == T.SubSequence.Iterator.Element>(from collection: T, for range: Range<Index>? = nil) -> [Iterator.Element]? {
-        let selfRange = range ?? indices
-        guard let rangeInFrom = (indices).range(in: collection.indices, for: selfRange) else { return nil }
-        let selfElementsInRange = self[selfRange]
-        let fromElementsInRange = collection[rangeInFrom]
-        var fromGen = fromElementsInRange.makeIterator()
+    func deltas
+        <T : Collection
+             where T.Iterator.Element == Self.Iterator.Element,
+                   T.Iterator.Element == T.SubSequence.Iterator.Element,
+                   T.Index == Int,
+                   T.Indices == CountableRange<Index>
+        >(from collection: T, for selectedIndices: Indices? = nil) -> [Iterator.Element]? {
+        if count as! Int != collection.count as! Int {
+            return nil
+        }
+        let indicesInSelf = selectedIndices ?? indices
+        guard let indicesInFrom = indices.range(in: collection.indices, for: indicesInSelf) else { return nil }
+        let selfElementsWithIndices = self[indicesInSelf]
+        let fromElementsWithIndices = collection[indicesInFrom]
+        var fromIterator = fromElementsWithIndices.makeIterator()
         var deltas: [Iterator.Element] = []
-        for selfElement in selfElementsInRange {
-            if let fromElement = fromGen.next() {
+        for selfElement in selfElementsWithIndices {
+            if let fromElement = fromIterator.next() {
                 deltas.append(selfElement - fromElement)
             }
         }
@@ -94,88 +198,105 @@ extension Collection where Iterator.Element : Numberable, Iterator.Element == Su
     /// 'Range' as first element and max-delta of this range as second.
     /// Returns 'nil', if any elemnt in either arrays is missing.
     @warn_unused_result
-    func nonZeroMaxDeltaRangesAndDeltas<T : Collection where T.Iterator.Element == Self.Iterator.Element, T.Iterator.Element == T.SubSequence.Iterator.Element>(from collection: T) -> [(Range<Index>, Iterator.Element)]? {
+    func nonZeroMaxDeltaIndicesAndDeltas
+        <T : Collection
+             where T.Iterator.Element == Self.Iterator.Element,
+                   T.Iterator.Element == T.SubSequence.Iterator.Element,
+                   T.Index == Int,
+                   T.Indices == CountableRange<Index>
+        >(from collection: T) -> [(CountableRange<Index>, Iterator.Element)]? {
         guard let deltas = deltas(from: collection) else { return nil }
-        var results: [(Range<Index>, Iterator.Element)] = []
+        print("deltas: \(deltas)")
+        var results: [(CountableRange<Index>, Iterator.Element)] = []
+        if deltas.count == 0 { return results }
+        let zero = deltas.first! - deltas.first!
         var headIndex: Index?
         var tailIndex: Index?
-        var deltasGen = deltas.makeIterator()
-        var deltaForRange: Iterator.Element?
-        for i in indices {
-            guard let deltaAtPosition = deltasGen.next() else {
-                fatalError("func nonZeroMaxDeltaRangesAndDeltas came up with invalid deltas.")
-            }
-            var lastResultDone = false
-            if deltaAtPosition != deltaAtPosition.zero {
-                if let _ = headIndex, deltaForRangeHere = deltaForRange {
-                    if deltaForRangeHere * deltaAtPosition < deltaAtPosition.zero {
-                        lastResultDone = true
+        var deltasIterator = deltas.makeIterator()
+        var deltaForIndices: Iterator.Element?
+        for i in startIndex...endIndex {
+            tailIndex = i
+            var newPieceReady = false
+            let delta = deltasIterator.next()
+            if i == endIndex && headIndex != nil { newPieceReady = true }
+            if i != endIndex {
+                guard let deltaAtPosition = delta else {
+                    fatalError("func nonZeroMaxDeltaIndicesAndDeltas came up with invalid deltas.")
+                }
+                if !deltaAtPosition.isEqual(to: zero) {
+                    if let _ = headIndex, deltaForIndicesHere = deltaForIndices {
+                        if (deltaForIndicesHere * deltaAtPosition).isLess(than: zero) { newPieceReady = true }
+                    }
+                    else {
+                        headIndex = i
+                    }
+                    if !newPieceReady {
+                        deltaForIndices = (deltaForIndices == nil) ?
+                            deltaAtPosition :
+                            (deltaAtPosition.isGreater(than: zero) ? controlledMin(deltaForIndices!, deltaAtPosition) : controlledMax(deltaForIndices!, deltaAtPosition))
                     }
                 }
                 else {
-                    headIndex = i
-                }
-                if !lastResultDone {
-                    deltaForRange = (deltaForRange == nil) ? deltaAtPosition : min(deltaForRange!, deltaAtPosition)
+                    newPieceReady = true
                 }
             }
-            else {
-                lastResultDone = true
-            }
-            tailIndex = i
-            if deltaAtPosition != deltaAtPosition.zero && <#T##Collection corresponding to your index##Collection#>.index(after: tailIndex?) == endIndex {
-                tailIndex = <#T##Collection corresponding to your index##Collection#>.index(after: tailIndex?)
-                lastResultDone = true
-            }
-            if lastResultDone {
-                if let start = headIndex, end = tailIndex, deltaHere = deltaForRange {
+            if newPieceReady {
+                if let start = headIndex, end = tailIndex, deltaHere = deltaForIndices {
                     results.append((start..<end, deltaHere))
                 }
                 headIndex = nil
                 tailIndex = nil
-                deltaForRange = nil
-                if deltaAtPosition != deltaAtPosition.zero {
+                deltaForIndices = nil
+                if delta != nil && !delta!.isEqual(to: zero) {
                     headIndex = i
-                    deltaForRange = deltaAtPosition
+                    deltaForIndices = delta
                 }
             }
         }
         return results
     }
     /// Returns a new 'Array' with elements in 'range' modified by 'delta'.
+    /// Returns 'nil', if 'range' is out of bounds.
     @warn_unused_result
-    func apply(_ delta: Iterator.Element, to range: Range<Index>) -> [Iterator.Element] {
+    func apply(delta: Iterator.Element, to selectedIndices: CountableRange<Index>) -> [Iterator.Element]? {
+        if startIndex.distance(to: selectedIndices.startIndex) < 0 || endIndex.distance(to: selectedIndices.endIndex) > 0 { return nil }
         var deltas: [Iterator.Element] = []
-        deltas.append(Repeated(((startIndex..<range.startIndex).count as! Int), count: delta.zero))
-        deltas.append(Repeated(((range.startIndex..<range.endIndex).count as! Int), count: delta))
-        deltas.append(Repeated(((range.endIndex..<endIndex).count as! Int), count: delta.zero))
+        let zero = delta - delta
+        deltas.append(contentsOf: repeatElement(zero, count: (startIndex..<selectedIndices.startIndex).count))
+        deltas.append(contentsOf: repeatElement(delta, count: ((selectedIndices.startIndex..<selectedIndices.endIndex).count)))
+        deltas.append(contentsOf: repeatElement(zero, count: (selectedIndices.endIndex..<endIndex).count))
         var newNumbers: [Iterator.Element] = []
-        var deltasGen = deltas.makeIterator()
+        var deltasIterator = deltas.makeIterator()
         for number in self {
-            newNumbers.append(number + deltasGen.next()!)
+            newNumbers.append(number + deltasIterator.next()!)
         }
         return newNumbers
     }
     
 }
-
-extension Array where Element : Numberable {
+extension Array where Element : ControlledComparable, Element: Arithmeticable {
+    /// Returns all deltas, ranges applied and new arrays generated to reach
+    /// self.
+    /// Returns 'nil', if there is no corresponding element in either array or
+    /// 'deltaPicker' fails to pick.
     @warn_unused_result
-    func deltasAndRangesWithNewArrays(from collection: [Element], deltaPicker: ([(CountableRange<Int>, Element)]) -> (CountableRange<Int>, Element)?) -> (deltas: [Iterator.Element], ranges: [CountableRange<Int>], newArrays: [[Element]])? {
+    func deltasAndIndicesWithNewArrays(from array: [Element], deltaPicker: @noescape([(CountableRange<Int>, Element)]) -> (CountableRange<Int>, Element)?) -> (deltas: [Iterator.Element], ranges: [CountableRange<Int>], newArrays: [[Element]])? {
+        if count != array.count { return nil }
         var deltas: [Iterator.Element] = []
-        var ranges: [CountableRange<Int>] = []
+        var allIndices: [CountableRange<Int>] = []
         var newArrays: [[Element]] = []
-        var newCollection = collection
-        var numberOfOptions = nonZeroMaxDeltaRangesAndDeltas(from: collection)?.count ?? 0
+        var newCollection = array
+        var numberOfOptions = nonZeroMaxDeltaIndicesAndDeltas(from: array)?.count ?? 0
         while numberOfOptions > 0 {
-            if let options = nonZeroMaxDeltaRangesAndDeltas(from: newCollection) {
+            if let options = nonZeroMaxDeltaIndicesAndDeltas(from: newCollection) {
+                print("OPTIONS: \(options)")
                 numberOfOptions = options.count
                 if numberOfOptions > 0 {
                     guard let pick = deltaPicker(options)
                         else { return nil }
                     deltas.append(pick.1)
-                    ranges.append(pick.0)
-                    newCollection = (newArrays.last ?? collection).apply(pick.1, to: pick.0)
+                    allIndices.append(pick.0)
+                    newCollection = (newArrays.last ?? array).apply(delta: pick.1, to: pick.0)!
                     newArrays.append(newCollection)
                 }
             }
@@ -183,7 +304,6 @@ extension Array where Element : Numberable {
                 return nil
             }
         }
-        return (deltas, ranges, newArrays)
+        return (deltas, allIndices, newArrays)
     }
 }
-

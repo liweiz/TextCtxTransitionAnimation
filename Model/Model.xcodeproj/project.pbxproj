@@ -12,8 +12,6 @@
 		EE1F105D1D070B9B002F6621 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE1F105C1D070B9B002F6621 /* Assets.xcassets */; };
 		EE1F106B1D070B9B002F6621 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1F106A1D070B9B002F6621 /* ModelTests.swift */; };
 		EE1F10781D070BCE002F6621 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1F10751D070BCE002F6621 /* Model.swift */; };
-		EE1F10791D070BCE002F6621 /* Numberable.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1F10761D070BCE002F6621 /* Numberable.swift */; };
-		EE1F107A1D070BCE002F6621 /* NestedSequenceGrouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1F10771D070BCE002F6621 /* NestedSequenceGrouper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,9 +34,6 @@
 		EE1F106A1D070B9B002F6621 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		EE1F106C1D070B9B002F6621 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EE1F10751D070BCE002F6621 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
-		EE1F10761D070BCE002F6621 /* Numberable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Numberable.swift; sourceTree = "<group>"; };
-		EE1F10771D070BCE002F6621 /* NestedSequenceGrouper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NestedSequenceGrouper.swift; sourceTree = "<group>"; };
-		EEAB35E01D134CFF00008ABA /* ModelPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; name = ModelPlayground.playground; path = ../ModelPlayground.playground; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +57,6 @@
 		EE1F10491D070B9A002F6621 = {
 			isa = PBXGroup;
 			children = (
-				EEAB35E01D134CFF00008ABA /* ModelPlayground.playground */,
 				EE1F10541D070B9B002F6621 /* Model */,
 				EE1F10691D070B9B002F6621 /* ModelTests */,
 				EE1F10531D070B9B002F6621 /* Products */,
@@ -83,8 +77,6 @@
 			children = (
 				EE02A34E1D12583E00F617AD /* AppDelegate.swift */,
 				EE1F10751D070BCE002F6621 /* Model.swift */,
-				EE1F10761D070BCE002F6621 /* Numberable.swift */,
-				EE1F10771D070BCE002F6621 /* NestedSequenceGrouper.swift */,
 				EE1F105C1D070B9B002F6621 /* Assets.xcassets */,
 				EE1F10611D070B9B002F6621 /* Info.plist */,
 			);
@@ -146,7 +138,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Liwei Zhang";
 				TargetAttributes = {
 					EE1F10511D070B9B002F6621 = {
@@ -203,8 +195,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE02A34F1D12583E00F617AD /* AppDelegate.swift in Sources */,
-				EE1F107A1D070BCE002F6621 /* NestedSequenceGrouper.swift in Sources */,
-				EE1F10791D070BCE002F6621 /* Numberable.swift in Sources */,
 				EE1F10781D070BCE002F6621 /* Model.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -334,6 +324,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Liwei.TCTA.Model;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -359,6 +350,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Liwei.TCTA.ModelTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Model.app/Model";
 			};
