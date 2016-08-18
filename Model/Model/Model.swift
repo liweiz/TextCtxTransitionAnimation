@@ -13,14 +13,14 @@ extension CountableRange {
     /// 'rangeInSelf' in 'anotherRange'.
     /// Return 'nil', if endIndex of 'anotherRange' met before the endIndex of
     /// 'rangeInSelf' met.
-    @warn_unused_result
     func range<T : protocol<Comparable, _Strideable>>(in anotherCountableRange: CountableRange<T>, for rangeInSelf: CountableRange) -> CountableRange<T>? {
         var anotherLowerBoundForRange: T?
         var anotherUpperBoundForRange: T?
         var anotherIterator = anotherCountableRange.makeIterator()
         var anotherNext = anotherIterator.next()
         for i in CountableClosedRange(lowerBound...upperBound) {
-            if anotherCountableRange.startIndex.distance(to: anotherCountableRange.endIndex) > anotherNext?.distance(to: anotherCountableRange.endIndex) {
+            if anotherCountableRange.upperBound.distance(to: anotherCountableRange.upperBound) > anotherNext?.distance(to: anotherCountableRange.upperBound) {
+                print("BREAK")
                 break
             }
             if i == rangeInSelf.lowerBound {
@@ -29,6 +29,7 @@ extension CountableRange {
             if i == rangeInSelf.upperBound {
                 anotherUpperBoundForRange = anotherNext
             }
+            print("i: \(i), lowerBound: \(rangeInSelf.lowerBound), upperBound: \(rangeInSelf.upperBound)")
             if let start = anotherLowerBoundForRange, end = anotherUpperBoundForRange {
                 return start..<end
             }
@@ -69,15 +70,12 @@ protocol ControlledComparable : Comparable {
 }
 
 extension IntegerArithmetic {
-    @warn_unused_result
     func isEqual(to another: Self) -> Bool {
         return self == another
     }
-    @warn_unused_result
     func isGreater(than another: Self) -> Bool {
         return self > another
     }
-    @warn_unused_result
     func isLess(than another: Self) -> Bool {
         return self < another
     }
@@ -97,15 +95,12 @@ extension UInt64: ControlledComparable {}
 let accuracyPctInDouble: Double = 0.001 * 0.01
 
 extension Double {
-    @warn_unused_result
     func isEqual(to another: Double) -> Bool {
         return self - another > -accuracyPctInDouble && self - another < accuracyPctInDouble
     }
-    @warn_unused_result
     func isGreater(than another: Double) -> Bool {
         return self - another >= accuracyPctInDouble
     }
-    @warn_unused_result
     func isLess(than another: Double) -> Bool {
         return self - another <= -accuracyPctInDouble
     }
@@ -116,15 +111,12 @@ extension Double: ControlledComparable {}
 let accuracyPctInFloat: Float = 0.0001
 
 extension Float {
-    @warn_unused_result
     func isEqual(to another: Float) -> Bool {
         return self - another > -accuracyPctInFloat && self - another < accuracyPctInFloat
     }
-    @warn_unused_result
     func isGreater(than another: Float) -> Bool {
         return self - another >= accuracyPctInFloat
     }
-    @warn_unused_result
     func isLess(than another: Float) -> Bool {
         return self - another <= -accuracyPctInFloat
     }
@@ -169,7 +161,6 @@ where Iterator.Element : ControlledComparable,
     /// For each element in 'self', get the delta from the corresponding one in
     /// 'from' and return as an 'Array'.
     /// Returns 'nil', if any elemnt in either arrays is missing.
-    @warn_unused_result
     func deltas
         <T : Collection
              where T.Iterator.Element == Self.Iterator.Element,
@@ -197,7 +188,6 @@ where Iterator.Element : ControlledComparable,
     /// Returns all ranges with continuous non-zero delta in 'Tuple' with
     /// 'Range' as first element and max-delta of this range as second.
     /// Returns 'nil', if any elemnt in either arrays is missing.
-    @warn_unused_result
     func nonZeroMaxDeltaIndicesAndDeltas
         <T : Collection
              where T.Iterator.Element == Self.Iterator.Element,
@@ -257,7 +247,6 @@ where Iterator.Element : ControlledComparable,
     }
     /// Returns a new 'Array' with elements in 'range' modified by 'delta'.
     /// Returns 'nil', if 'range' is out of bounds.
-    @warn_unused_result
     func apply(delta: Iterator.Element, to selectedIndices: CountableRange<Index>) -> [Iterator.Element]? {
         if startIndex.distance(to: selectedIndices.startIndex) < 0 || endIndex.distance(to: selectedIndices.endIndex) > 0 { return nil }
         var deltas: [Iterator.Element] = []
@@ -279,7 +268,6 @@ extension Array where Element : ControlledComparable, Element: Arithmeticable {
     /// self.
     /// Returns 'nil', if there is no corresponding element in either array or
     /// 'deltaPicker' fails to pick.
-    @warn_unused_result
     func deltasAndIndicesWithNewArrays(from array: [Element], deltaPicker: @noescape([(CountableRange<Int>, Element)]) -> (CountableRange<Int>, Element)?) -> (deltas: [Iterator.Element], ranges: [CountableRange<Int>], newArrays: [[Element]])? {
         if count != array.count { return nil }
         var deltas: [Iterator.Element] = []

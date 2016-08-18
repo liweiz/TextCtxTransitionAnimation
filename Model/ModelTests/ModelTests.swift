@@ -21,36 +21,35 @@ class ModelTests: XCTestCase {
         super.tearDown()
     }
     
-//    func test_Extension_Range_range() {
-//        struct Tests {
-//            let testName: String
-//            let in_anotherRange: Range<Int>
-//            let for_rangeInSelf: Range<Int>
-//            let expectedOutput: Range<Int>?
-//        }
-//        let selfRange = 0..<100
-//        let toTests = [
-//            Tests(testName: "normal", in_anotherRange: 100..<500, for_rangeInSelf: 34..<47, expectedOutput: 134..<147),
-//            Tests(testName: "nil", in_anotherRange: 10..<20, for_rangeInSelf: 34..<35, expectedOutput: nil)
-//        ]
-//        let testFuncName = "Extension_Range.range"
-//        var i = 0
-//        for t in toTests {
-//            testNonCollectionEqualWithLog(selfRange.range(in: t.in_anotherRange, for: t.for_rangeInSelf), expression2: t.expectedOutput, testFuncName: testFuncName, testName: t.testName, testIndex: i)
-//            i += 1
-//        }
-//    }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func test_Extension_CountabeRange_range_Int() {
+        struct Test {
+            let testName: String
+            let selfRange: CountableRange<Int>
+            let in_anotherCountableRange: CountableRange<Int>
+            let for_rangeInSelf: CountableRange<Int>
+            let expectedOutput: CountableRange<Int>?
+        }
+        let rangeA = 0..<100
+        let rangeB = 50..<1000
+        let rangeC = -99..<(-60)
+        let rangeD = 0..<0
+        let toTest = [
+            Test(testName: "Range provided out of bounds of both base and in.", selfRange: rangeA, in_anotherCountableRange: rangeB, for_rangeInSelf: 1000..<1001, expectedOutput: nil),
+            Test(testName: "Range provided out of bounds of base.", selfRange: rangeA, in_anotherCountableRange: rangeC, for_rangeInSelf: -9..<20, expectedOutput: nil),
+            Test(testName: "Range provided out of bounds of in.", selfRange: rangeA, in_anotherCountableRange: rangeC, for_rangeInSelf: 87..<90, expectedOutput: nil),
+            Test(testName: "Range provided falls in both bounds of base and in.", selfRange: rangeA, in_anotherCountableRange: rangeC, for_rangeInSelf: 23..<30, expectedOutput: -76..<(-69)),
+            Test(testName: "Empty range provided falls in both bounds of base and in.", selfRange: rangeD, in_anotherCountableRange: rangeD, for_rangeInSelf: 0..<0, expectedOutput: 0..<0),
+            Test(testName: "Non-empty base.", selfRange: rangeB, in_anotherCountableRange: rangeB, for_rangeInSelf: 150..<150, expectedOutput: 150..<150),
+            Test(testName: "Empty range provided out of bounds of both base and in.", selfRange: rangeB, in_anotherCountableRange: rangeB, for_rangeInSelf: 0..<0, expectedOutput: nil)
+        ]
+        let testFuncName = "Extension_Range.range_Int"
+        var i = 0
+        for t in toTest {
+            testNonCollectionEqualWithLog(t.selfRange.range(in: t.in_anotherCountableRange, for: t.for_rangeInSelf), expression2: t.expectedOutput, testFuncName: testFuncName, testName: t.testName, testIndex: i)
+            i += 1
         }
     }
+    
+
     
 }
